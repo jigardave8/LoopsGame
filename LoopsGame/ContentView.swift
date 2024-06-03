@@ -25,9 +25,9 @@ struct Pipe: View {
                     
             case .curve:
                 Path { path in
-                    path.move(to: CGPoint(x: 25, y: 0))
-                    path.addLine(to: CGPoint(x: 25, y: 25))
-                    path.addLine(to: CGPoint(x: 0, y: 25))
+                    path.move(to: CGPoint(x: 50, y: 0))
+                    path.addLine(to: CGPoint(x: 50, y: 50))
+                    path.addLine(to: CGPoint(x: 0, y: 50))
                 }
                 .stroke(lineWidth: 10) .foregroundColor(.blue)
             }
@@ -40,19 +40,23 @@ struct Pipe: View {
 }
 
 struct ContentView: View {
-    @State private var rotations: [[Angle]] = Array(repeating: Array(repeating: .degrees(0), count: 4), count: 4)
+    @State private var rotations: [[Angle]] = Array(repeating: Array(repeating: .degrees(0), count: 6), count: 6)
     let grid: [[PipeType]] = [
-        [.straight, .straight, .straight, .straight],
+        [.straight, .straight, .curve, .straight],
+        [.curve,.straight,.curve,.curve,],
         [.straight, .curve, .straight, .curve],
         [.straight, .straight, .curve, .straight],
-        [.straight, .straight, .straight, .straight]
+        [.curve,.curve,.straight,.curve,],
+        [.straight, .straight, .straight, .curve]
     ]
     
     let solutionRotations: [[Angle]] = [
-        [.degrees(90), .degrees(0), .degrees(180), .degrees(90)],
-        [.degrees(0), .degrees(90), .degrees(0), .degrees(0)],
+        [.degrees(90), .degrees(0), .degrees(180), .degrees(0)],
+        [.degrees(270), .degrees(0), .degrees(270), .degrees(0)],
         [.degrees(180), .degrees(0), .degrees(270), .degrees(0)],
-        [.degrees(0), .degrees(90), .degrees(180), .degrees(0)]
+        [.degrees(0), .degrees(90), .degrees(180), .degrees(0)],
+        [.degrees(180), .degrees(0), .degrees(0), .degrees(360)],
+        [.degrees(0), .degrees(90), .degrees(180), .degrees(270)]
     ]
     
     var body: some View {
@@ -61,12 +65,12 @@ struct ContentView: View {
                 .font(.title)
                 .padding()
 
-            VStack(spacing: 0) {
+            VStack(spacing: -45) {
                 ForEach(0..<grid.count, id: \.self) { row in
-                    HStack(spacing: 0) {
+                    HStack(spacing: -45) {
                         ForEach(0..<grid[row].count, id: \.self) { col in
                             Pipe(type: grid[row][col], rotation: $rotations[row][col])
-                                .frame(width: 70, height: 70)
+                                .frame(width: 100, height: 100)
                                 .padding(0)
                         }
                     }
