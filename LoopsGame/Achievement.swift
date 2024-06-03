@@ -7,12 +7,10 @@
 
 import SwiftUI
 
-struct Achievement: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
-
-#Preview {
-    Achievement()
+struct Achievement: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let reward: String
+    var isCompleted: Bool = false
 }

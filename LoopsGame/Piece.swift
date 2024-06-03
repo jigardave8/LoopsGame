@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct Piece: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
 
-#Preview {
-    Piece()
+import SwiftUI
+
+struct Piece: Identifiable, Equatable {
+    let id = UUID()
+    var rotation: Double
+    var targetRotation: Double
+    var path: Path
 }

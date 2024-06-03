@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct RotatablePieceView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+    @Binding var piece: Piece
 
-#Preview {
-    RotatablePieceView()
+    var body: some View {
+        piece.path
+            .stroke(ThemeManager.currentTheme.pieceColor, lineWidth: 5)
+            .frame(width: 80, height: 80)
+            .rotationEffect(.degrees(piece.rotation))
+            .onTapGesture {
+                withAnimation {
+                    self.piece.rotation += 90
+                    self.piece.rotation = self.piece.rotation.truncatingRemainder(dividingBy: 360)
+                }
+            }
+    }
 }

@@ -7,12 +7,28 @@
 
 import SwiftUI
 
-struct ThemeManager: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+class ThemeManager {
+    static var currentTheme: Theme = .light
 
-#Preview {
-    ThemeManager()
+    enum Theme {
+        case light, dark
+
+        var pieceColor: Color {
+            switch self {
+            case .light:
+                return Color.blue
+            case .dark:
+                return Color.white
+            }
+        }
+
+        var backgroundColor: Color {
+            switch self {
+            case .light:
+                return Color.white
+            case .dark:
+                return Color.black
+            }
+        }
+    }
 }
