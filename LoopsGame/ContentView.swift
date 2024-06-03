@@ -7,168 +7,98 @@
 
 import SwiftUI
 
-struct Level {
-    var initialPieces: [Piece]
-    var solutionPieces: [Piece]
+enum PipeType {
+    case straight
+    case curve
 }
 
+struct Pipe: View {
+    var type: PipeType
+    @Binding var rotation: Angle
 
-import SwiftUI
+    var body: some View {
+        ZStack {
+            switch type {
+            case .straight:
+                Rectangle()
+                    .frame(width: 50, height: 10)
+                    
+            case .curve:
+                Path { path in
+                    path.move(to: CGPoint(x: 25, y: 0))
+                    path.addLine(to: CGPoint(x: 25, y: 25))
+                    path.addLine(to: CGPoint(x: 0, y: 25))
+                }
+                .stroke(lineWidth: 10) .foregroundColor(.blue)
+            }
+        }
+        .rotationEffect(rotation)
+        .onTapGesture {
+            rotation += .degrees(90)
+        }
+    }
+}
 
 struct ContentView: View {
-    @State private var levels: [Level] = [
-        Level(initialPieces: [
-            Piece(rotation: 0, targetRotation: 0, path: Path { path in
-                path.move(to: CGPoint(x: 0, y: 40))
-                path.addLine(to: CGPoint(x: 80, y: 40))
-            }),
-            Piece(rotation: 90, targetRotation: 0, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(0), endAngle: .degrees(180), clockwise: false)
-            }),
-            Piece(rotation: 180, targetRotation: 90, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(-90), endAngle: .degrees(90), clockwise: true)
-            }),
-            Piece(rotation: 270, targetRotation: 180, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
-            }),
-            Piece(rotation: 0, targetRotation: 270, path: Path { path in
-                path.move(to: CGPoint(x: 40, y: 0))
-                path.addLine(to: CGPoint(x: 40, y: 80))
-            }),
-            Piece(rotation: 90, targetRotation: 90, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
-            }),
-            Piece(rotation: 180, targetRotation: 180, path: Path { path in
-                path.move(to: CGPoint(x: 0, y: 40))
-                path.addLine(to: CGPoint(x: 80, y: 40))
-            }),
-            Piece(rotation: 270, targetRotation: 270, path: Path { path in
-                path.move(to: CGPoint(x: 40, y: 0))
-                path.addLine(to: CGPoint(x: 40, y: 80))
-            })
-        ], solutionPieces: [
-            Piece(rotation: 0, targetRotation: 0, path: Path { path in
-                path.move(to: CGPoint(x: 0, y: 40))
-                path.addLine(to: CGPoint(x: 80, y: 40))
-            }),
-            Piece(rotation: 0, targetRotation: 0, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(0), endAngle: .degrees(180), clockwise: false)
-            }),
-            Piece(rotation: 90, targetRotation: 90, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(-90), endAngle: .degrees(90), clockwise: true)
-            }),
-            Piece(rotation: 180, targetRotation: 180, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(180), endAngle: .degrees(360), clockwise: false)
-            }),
-            Piece(rotation: 270, targetRotation: 270, path: Path { path in
-                path.move(to: CGPoint(x: 40, y: 0))
-                path.addLine(to: CGPoint(x: 40, y: 80))
-            }),
-            Piece(rotation: 90, targetRotation: 90, path: Path { path in
-                path.addArc(center: CGPoint(x: 40, y: 40), radius: 30, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
-            }),
-            Piece(rotation: 180, targetRotation: 180, path: Path { path in
-                path.move(to: CGPoint(x: 0, y: 40))
-                path.addLine(to: CGPoint(x: 80, y: 40))
-            }),
-            Piece(rotation: 270, targetRotation: 270, path: Path { path in
-                path.move(to: CGPoint(x: 40, y: 0))
-                path.addLine(to: CGPoint(x: 40, y: 80))
-            })
-        ])
-        // Add more levels as needed
+    @State private var rotations: [[Angle]] = Array(repeating: Array(repeating: .degrees(0), count: 4), count: 4)
+    let grid: [[PipeType]] = [
+        [.straight, .straight, .straight, .straight],
+        [.straight, .curve, .straight, .curve],
+        [.straight, .straight, .curve, .straight],
+        [.straight, .straight, .straight, .straight]
     ]
     
-    @State private var currentLevelIndex: Int = 0
-    @State private var currentPieces: [Piece] = []
-    @State private var isCompleted = false
+    let solutionRotations: [[Angle]] = [
+        [.degrees(90), .degrees(0), .degrees(180), .degrees(90)],
+        [.degrees(0), .degrees(90), .degrees(0), .degrees(0)],
+        [.degrees(180), .degrees(0), .degrees(270), .degrees(0)],
+        [.degrees(0), .degrees(90), .degrees(180), .degrees(0)]
+    ]
     
     var body: some View {
         VStack {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.black, lineWidth: 2)
-                    .frame(width: UIScreen.main.bounds.width - 40, height: UIScreen.main.bounds.width - 40)
-                    .padding()
-                
-                VStack(spacing: 0) { // Zero spacing here
-                    ForEach(0..<2) { row in
-                        HStack(spacing: 0) { // Zero spacing here
-                            ForEach(0..<4) { col in
-                                if row * 4 + col < self.currentPieces.count {
-                                    RotatablePieceView(piece: self.$currentPieces[row * 4 + col])
-                                }
-                            }
+            Text("Loop Connecting Game")
+                .font(.title)
+                .padding()
+
+            VStack(spacing: 0) {
+                ForEach(0..<grid.count, id: \.self) { row in
+                    HStack(spacing: 0) {
+                        ForEach(0..<grid[row].count, id: \.self) { col in
+                            Pipe(type: grid[row][col], rotation: $rotations[row][col])
+                                .frame(width: 70, height: 70)
+                                .padding(0)
                         }
                     }
                 }
-                .padding(20)
-                .opacity(self.isCompleted ? 0.5 : 1.0)
             }
-            
-            HStack {
-                Button("Reset Pieces") {
-                    self.resetPieces()
-                }
-                .padding()
-                Button("Check Solution") {
-                    self.checkSolution()
-                }
-                .padding()
+            .background(Color.gray.opacity(0.2))
+            .cornerRadius(10)
+            .padding()
+
+            Button(action: {
+                solvePipes()
+            }) {
+                Text("Show Solution")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
             }
+            .padding()
+
+            Spacer()
         }
-        .padding()
-        .onAppear {
-            self.loadLevel(index: self.currentLevelIndex)
-        }
-    }
-    
-    func loadLevel(index: Int) {
-        guard index < levels.count else { return }
-        let level = levels[index]
-        currentPieces = level.initialPieces
-        isCompleted = false
-    }
-    
-    func resetPieces() {
-        loadLevel(index: currentLevelIndex)
-    }
-    
-//    func checkSolution() {
-//        let solution = levels[currentLevelIndex].solutionPieces
-//        var isSolutionCorrect = true
-//        
-//        for (index, piece) in currentPieces.enumerated() {
-//            if piece.rotation.truncatingRemainder(dividingBy: 360) != solution[index].targetRotation {
-//                isSolutionCorrect = false
-//                break
-//            }
-//        }
-//        
-//        if isSolutionCorrect {
-//            withAnimation {
-//                for index in currentPieces.indices {
-//                    currentPieces[index].rotation = solution[index].targetRotation
-//                }
-//                self.isCompleted = true
-//                print("Solution is correct!")
-//            }
-//        } else {
-//            print("Solution is incorrect!")
-//        }
-//    }
-    
-    func checkSolution() {
-        let solution = levels[currentLevelIndex].solutionPieces
-        
-        // Iterate through each piece and rotate it to its target rotation angle
-        withAnimation {
-            for (index, piece) in currentPieces.enumerated() {
-                currentPieces[index].rotation = solution[index].targetRotation
-            }
-            self.isCompleted = true
-            print("Solution is correct!")
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
     }
 
+    func solvePipes() {
+        for row in 0..<rotations.count {
+            for col in 0..<rotations[row].count {
+                rotations[row][col] = solutionRotations[row][col]
+            }
+        }
+    }
 }
+
