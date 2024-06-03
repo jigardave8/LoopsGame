@@ -134,27 +134,41 @@ struct ContentView: View {
         loadLevel(index: currentLevelIndex)
     }
     
+//    func checkSolution() {
+//        let solution = levels[currentLevelIndex].solutionPieces
+//        var isSolutionCorrect = true
+//        
+//        for (index, piece) in currentPieces.enumerated() {
+//            if piece.rotation.truncatingRemainder(dividingBy: 360) != solution[index].targetRotation {
+//                isSolutionCorrect = false
+//                break
+//            }
+//        }
+//        
+//        if isSolutionCorrect {
+//            withAnimation {
+//                for index in currentPieces.indices {
+//                    currentPieces[index].rotation = solution[index].targetRotation
+//                }
+//                self.isCompleted = true
+//                print("Solution is correct!")
+//            }
+//        } else {
+//            print("Solution is incorrect!")
+//        }
+//    }
+    
     func checkSolution() {
         let solution = levels[currentLevelIndex].solutionPieces
-        var isSolutionCorrect = true
         
-        for (index, piece) in currentPieces.enumerated() {
-            if piece.rotation.truncatingRemainder(dividingBy: 360) != solution[index].targetRotation {
-                isSolutionCorrect = false
-                break
+        // Iterate through each piece and rotate it to its target rotation angle
+        withAnimation {
+            for (index, piece) in currentPieces.enumerated() {
+                currentPieces[index].rotation = solution[index].targetRotation
             }
-        }
-        
-        if isSolutionCorrect {
-            withAnimation {
-                for index in currentPieces.indices {
-                    currentPieces[index].rotation = solution[index].targetRotation
-                }
-                self.isCompleted = true
-                print("Solution is correct!")
-            }
-        } else {
-            print("Solution is incorrect!")
+            self.isCompleted = true
+            print("Solution is correct!")
         }
     }
+
 }
