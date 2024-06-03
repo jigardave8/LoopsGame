@@ -21,7 +21,7 @@ struct Pipe: View {
             switch type {
             case .straight:
                 Rectangle()
-                    .fill(Color.black)
+                    .fill(Color.blue)
                     .frame(width: 50, height: 10)
                     
             case .curve:
