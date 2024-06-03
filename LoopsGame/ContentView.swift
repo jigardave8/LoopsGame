@@ -15,12 +15,13 @@ enum PipeType {
 struct Pipe: View {
     var type: PipeType
     @Binding var rotation: Angle
-
+    
     var body: some View {
         ZStack {
             switch type {
             case .straight:
                 Rectangle()
+                    .fill(Color.black)
                     .frame(width: 50, height: 10)
                     
             case .curve:
@@ -29,7 +30,7 @@ struct Pipe: View {
                     path.addLine(to: CGPoint(x: 50, y: 50))
                     path.addLine(to: CGPoint(x: 0, y: 50))
                 }
-                .stroke(lineWidth: 10) .foregroundColor(.blue)
+                .stroke(Color.blue, lineWidth: 10)
             }
         }
         .rotationEffect(rotation)
@@ -42,21 +43,21 @@ struct Pipe: View {
 struct ContentView: View {
     @State private var rotations: [[Angle]] = Array(repeating: Array(repeating: .degrees(0), count: 6), count: 6)
     let grid: [[PipeType]] = [
-        [.straight, .straight, .curve, .straight],
-        [.curve,.straight,.curve,.curve,],
-        [.straight, .curve, .straight, .curve],
-        [.straight, .straight, .curve, .straight],
-        [.curve,.curve,.straight,.curve,],
-        [.straight, .straight, .straight, .curve]
+        [.curve, .straight, .curve, .straight, .curve, .straight],
+        [.straight, .curve, .straight, .curve, .straight, .curve],
+        [.curve, .straight, .curve, .straight, .curve, .straight],
+        [.straight, .curve, .straight, .curve, .straight, .curve],
+        [.curve, .straight, .curve, .straight, .curve, .straight],
+        [.straight, .curve, .straight, .curve, .straight, .curve]
     ]
     
     let solutionRotations: [[Angle]] = [
-        [.degrees(90), .degrees(0), .degrees(180), .degrees(0)],
-        [.degrees(270), .degrees(0), .degrees(270), .degrees(0)],
-        [.degrees(180), .degrees(0), .degrees(270), .degrees(0)],
-        [.degrees(0), .degrees(90), .degrees(180), .degrees(0)],
-        [.degrees(180), .degrees(0), .degrees(0), .degrees(360)],
-        [.degrees(0), .degrees(90), .degrees(180), .degrees(270)]
+        [.degrees(90), .degrees(0), .degrees(180), .degrees(0), .degrees(90), .degrees(0)],
+        [.degrees(0), .degrees(90), .degrees(0), .degrees(90), .degrees(0), .degrees(90)],
+        [.degrees(180), .degrees(0), .degrees(90), .degrees(0), .degrees(90), .degrees(0)],
+        [.degrees(0), .degrees(90), .degrees(0), .degrees(90), .degrees(0), .degrees(90)],
+        [.degrees(180), .degrees(0), .degrees(90), .degrees(0), .degrees(90), .degrees(0)],
+        [.degrees(0), .degrees(90), .degrees(0), .degrees(90), .degrees(0), .degrees(90)]
     ]
     
     var body: some View {
@@ -65,9 +66,9 @@ struct ContentView: View {
                 .font(.title)
                 .padding()
 
-            VStack(spacing: -45) {
+            VStack(spacing: -50) { // Adjust spacing for seamless connection
                 ForEach(0..<grid.count, id: \.self) { row in
-                    HStack(spacing: -45) {
+                    HStack(spacing: -50) { // Adjust spacing for seamless connection
                         ForEach(0..<grid[row].count, id: \.self) { col in
                             Pipe(type: grid[row][col], rotation: $rotations[row][col])
                                 .frame(width: 100, height: 100)
