@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 enum PipeType {
     case straight
@@ -15,14 +16,17 @@ enum PipeType {
 struct Pipe: View {
     var type: PipeType
     @Binding var rotation: Angle
+    var isCorrect: Bool
     
     var body: some View {
         ZStack {
             switch type {
             case .straight:
                 Rectangle()
-                    .fill(Color.blue)
+                    .fill(isCorrect ? Color.green : Color.blue)
                     .frame(width: 50, height: 10)
+                    .cornerRadius(5)
+                    .shadow(radius: 5)
                     
             case .curve:
                 Path { path in
@@ -30,18 +34,26 @@ struct Pipe: View {
                     path.addLine(to: CGPoint(x: 50, y: 50))
                     path.addLine(to: CGPoint(x: 0, y: 50))
                 }
-                .stroke(Color.blue, lineWidth: 10)
+                .stroke(isCorrect ? Color.green : Color.blue, lineWidth: 10)
+                .shadow(radius: 5)
             }
         }
         .rotationEffect(rotation)
         .onTapGesture {
-            rotation += .degrees(90)
+            withAnimation(.easeInOut(duration: 0.5)) {
+                rotation += .degrees(90)
+            }
+//            playSound(named: "rotate")
         }
     }
 }
 
 struct ContentView: View {
     @State private var rotations: [[Angle]] = Array(repeating: Array(repeating: .degrees(0), count: 6), count: 6)
+    @State private var timeRemaining = 60
+    @State private var score = 0
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
     let grid: [[PipeType]] = [
         [.curve, .straight, .curve, .straight, .curve, .straight],
         [.straight, .curve, .straight, .curve, .straight, .curve],
@@ -61,41 +73,78 @@ struct ContentView: View {
     ]
     
     var body: some View {
-        VStack {
-            Text("Loop Connecting Game")
-                .font(.title)
+        ZStack {
+            LinearGradient(gradient: Gradient(colors: [Color.blue, Color.purple]), startPoint: .top, endPoint: .bottom)
+                .edgesIgnoringSafeArea(.all)
+
+            VStack {
+                HStack {
+                    Text("Time: \(timeRemaining)")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Text("Score: \(score)")
+                        .font(.title2)
+                        .foregroundColor(.white)
+                }
                 .padding()
 
-            VStack(spacing: -50) { // Adjust spacing for seamless connection
-                ForEach(0..<grid.count, id: \.self) { row in
-                    HStack(spacing: -50) { // Adjust spacing for seamless connection
-                        ForEach(0..<grid[row].count, id: \.self) { col in
-                            Pipe(type: grid[row][col], rotation: $rotations[row][col])
-                                .frame(width: 100, height: 100)
-                                .padding(0)
+                Text("Loop Connecting Game")
+                    .font(.title)
+                    .padding()
+                    .foregroundColor(.white)
+
+                VStack(spacing: -50) {
+                    ForEach(0..<grid.count, id: \.self) { row in
+                        HStack(spacing: -50) {
+                            ForEach(0..<grid[row].count, id: \.self) { col in
+                                Pipe(type: grid[row][col], rotation: $rotations[row][col], isCorrect: rotations[row][col] == solutionRotations[row][col])
+                                    .frame(width: 100, height: 100)
+                                    .padding(0)
+                            }
                         }
                     }
                 }
-            }
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(10)
-            .padding()
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
+                .padding()
 
-            Button(action: {
-                solvePipes()
-            }) {
-                Text("Show Solution")
+                HStack {
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 1.0)) {
+                            solvePipes()
+                        }
+                    }) {
+                        Text("Show Solution")
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .shadow(radius: 10)
+                    }
                     .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding()
 
-            Spacer()
+                    Button(action: {
+                        showHint()
+                    }) {
+                        Text("Show Hint")
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                            .shadow(radius: 10)
+                    }
+                    .padding()
+                }
+
+                Spacer()
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
+        .onReceive(timer) { _ in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            }
+        }
     }
 
     func solvePipes() {
@@ -104,6 +153,24 @@ struct ContentView: View {
                 rotations[row][col] = solutionRotations[row][col]
             }
         }
+        score += 100
+        playSound(named: "solution")
+    }
+
+    func showHint() {
+        for row in 0..<rotations.count {
+            for col in 0..<rotations[row].count {
+                if rotations[row][col] != solutionRotations[row][col] {
+                    rotations[row][col] = solutionRotations[row][col]
+                    return
+                }
+            }
+        }
+    }
+
+    func playSound(named name: String) {
+        guard let url = Bundle.main.url(forResource: name, withExtension: "mp3") else { return }
+        let player = try? AVAudioPlayer(contentsOf: url)
+        player?.play()
     }
 }
-
